@@ -1,0 +1,7 @@
+---
+- name: Restarting servers and services
+  hosts: all
+  gather_facts: true
+  tasks:
+    - include_role:
+        name: service_start_stop

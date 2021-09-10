@@ -1,0 +1,120 @@
+---
+#########Stopping App services###############
+- name: Stopping the services in the list
+  win_service:
+    name: "{{item}}"
+    state: stopped
+  register: Stopped_services
+  loop:
+  - ["service1", "service2", "service3", "service4"]
+  delegate_to: {{groups['app_server'][0]}}"
+  
+- name: Waiting for the all the services to be stopped
+  wait_for:
+    timeout: 30
+  delegate_to: {{groups['app_server'][0]}}"
+
+- name: Check whether the services are stopped or still running
+  win_service:
+    name: "{{ item }}"
+  register: service_info
+  loop:
+  - ["service1", "service2", "service3", "service4"]
+  delegate_to: {{groups['app_server'][0]}}"
+  
+- debug:
+    msg: "Some services has not been stopped"
+  register: stop_failed
+  when: "'running' in service_info"
+  
+- name: Trying to stop the services again
+  win_service:
+    name: "{{item}}"
+    state: stopped
+  register: Stopped_services
+  when: stop_failed is defined
+  loop:
+  - ["service1", "service2", "service3", "service4"]
+  delegate_to: {{groups['app_server'][0]}}"
+
+###################Stopping SQL Service#######################
+- name: stopping sql service
+  win_service:
+    name: "{{item}}"
+    state: stopped
+  register: sql_service_stopped
+  with_items:
+  - "sql_service"
+  delegate_to: {{groups['db_server'][0]}}"
+  
+- name: Waiting for sql service to be stopped
+  wait_for:
+    timeout: 20
+  delegate_to: {{groups['db_server'][0]}}"
+
+###############Rebooting App Server###########################################
+- name: Restarting app server 
+  win_reboot:
+    reboot_timeout: 800
+  register: app_server_restarted
+  delegate_to: {{groups['app_server'][0]}}"
+  
+######################Rebooting DB Server##############################
+- name: Restarting db server
+  win_reboot:
+    reboot_timeout: 800
+  register: db_server_restarted
+  delegate_to: {{groups['db_server'][0]}}"
+  
+######################Starting SQL service##################
+- name: starting sql service
+  win_service:
+    name: "{{item}}"
+    state: started
+  register: sql_service_started
+  with_items:
+  - "sql_service"
+  delegate_to: {{groups['db_server'][0]}}"
+
+- name: Waiting for sql service to be started
+  wait_for:
+    timeout: 20
+  delegate_to: {{groups['db_server'][0]}}"
+
+###########################Starting App Services##########################
+- name: Starting the services in the list
+  win_service:
+    name: "{{item}}"
+    state: started
+  register: started_services
+  loop:
+  - ["service1", "service2", "service3", "service4"]
+  delegate_to: {{groups['app_server'][0]}}"
+  
+- name: Waiting for the all the services to be started
+  wait_for:
+    timeout: 30
+  delegate_to: {{groups['app_server'][0]}}"
+
+- name: Check whether the services are running
+  win_service:
+    name: "{{ item }}"
+  register: service_info
+  loop:
+  - ["service1", "service2", "service3", "service4"]
+  delegate_to: {{groups['app_server'][0]}}"
+  
+- debug:
+    msg: "Some services are not running yet"
+  register: start_failed
+  when: "'stopped' in service_info"
+  
+- name: Trying to start the services again
+  win_service:
+    name: "{{item}}"
+    state: started
+  register: started_services
+  when: start_failed is defined
+  loop:
+  - ["service1", "service2", "service3", "service4"]
+  delegate_to: {{groups['app_server'][0]}}"
