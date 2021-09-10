@@ -2,6 +2,8 @@
 - name: Restarting servers and services
   hosts: all
   gather_facts: true
+  vars_files:
+    - group_vars/win_vars.yml
   tasks:
     - include_role:
         name: service_start_stop
