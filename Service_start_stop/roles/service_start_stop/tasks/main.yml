@@ -1,12 +1,25 @@
 ---
 #########Stopping App services###############
+- name: Getting the list of services which are running
+  register: running_services
+  win_shell: |
+    Get-Service | where {($_.Name -like "Markit EDM*")-and ($_.Status -eq "Running")} |  select Name, DisplayName 
+    
+- name: Converting results to json
+  set_fact: 
+    services_info: "{{ running_services.stdout | from_json }}"
+  
+- name: Debugging the output
+  debug:
+    msg: "services name {{ item.Name }}"
+  loop: "{{ services_info }}"
+
 - name: Stopping the services in the list
   win_service:
-    name: "{{item}}"
+    name: "{{item.Name}}"
     state: stopped
   register: Stopped_services
-  loop:
-  - ["service1", "service2", "service3", "service4"]
+  loop: "{{ services_info }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - name: Waiting for the all the services to be stopped
@@ -16,10 +29,9 @@
 
 - name: Check whether the services are stopped or still running
   win_service:
-    name: "{{ item }}"
+    name: "{{ item.Name }}"
   register: service_info
-  loop:
-  - ["service1", "service2", "service3", "service4"]
+  loop: "{{ services_info }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - debug:
@@ -29,12 +41,11 @@
   
 - name: Trying to stop the services again
   win_service:
-    name: "{{item}}"
+    name: "{{ item.Name }}"
     state: stopped
   register: Stopped_services
   when: stop_failed is defined
-  loop:
-  - ["service1", "service2", "service3", "service4"]
+  loop: "{{ services_info }}"
   delegate_to: {{groups['app_server'][0]}}"
 
 ###################Stopping SQL Service#######################
@@ -84,11 +95,10 @@
 ###########################Starting App Services##########################
 - name: Starting the services in the list
   win_service:
-    name: "{{item}}"
+    name: "{{ item.Name }}"
     state: started
   register: started_services
-  loop:
-  - ["service1", "service2", "service3", "service4"]
+  loop: "{{ services_info }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - name: Waiting for the all the services to be started
@@ -98,10 +108,9 @@
 
 - name: Check whether the services are running
   win_service:
-    name: "{{ item }}"
+    name: "{{ item.Name }}"
   register: service_info
-  loop:
-  - ["service1", "service2", "service3", "service4"]
+  loop: "{{ services_info }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - debug:
@@ -111,10 +120,9 @@
   
 - name: Trying to start the services again
   win_service:
-    name: "{{item}}"
+    name: "{{ item.Name }}"
     state: started
   register: started_services
   when: start_failed is defined
-  loop:
-  - ["service1", "service2", "service3", "service4"]
+  loop: "{{ services_info }}"
   delegate_to: {{groups['app_server'][0]}}"
