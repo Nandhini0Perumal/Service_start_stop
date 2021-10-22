@@ -1,9 +1,15 @@
 ---
 #########Stopping App services###############
+- name: copy the powershell files to local system
+  win_copy:
+    src: files/test.ps1
+    dest: C:\temp\test.ps1
+    
 - name: Getting the list of services which are running
+  win_shell: C:\temp\test.ps1
   register: running_services
-  win_shell: |
-    Get-Service | where {($_.Name -like "Markit EDM*")-and ($_.Status -eq "Running")} |  select Name, DisplayName 
+  
+- debug: var=running_services
     
 - name: Converting results to json
   set_fact: 
