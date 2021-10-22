@@ -10,22 +10,18 @@
   register: running_services
   
 - debug: var=running_services
-    
-- name: Converting results to json
-  set_fact: 
-    services_info: "{{ running_services.stdout | from_json }}"
   
 - name: Debugging the output
   debug:
-    msg: "services name {{ item.Name }}"
-  loop: "{{ services_info }}"
+    msg: "services name {{ item }}"
+  loop: "{{ running_services.stdout }}"
 
 - name: Stopping the services in the list
   win_service:
-    name: "{{item.Name}}"
+    name: "{{item}}"
     state: stopped
   register: Stopped_services
-  loop: "{{ services_info }}"
+  loop: "{{ running_services.stdout }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - name: Waiting for the all the services to be stopped
@@ -35,9 +31,9 @@
 
 - name: Check whether the services are stopped or still running
   win_service:
-    name: "{{ item.Name }}"
+    name: "{{ item }}"
   register: service_info
-  loop: "{{ services_info }}"
+  loop: "{{ running_services.stdout }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - debug:
@@ -47,11 +43,11 @@
   
 - name: Trying to stop the services again
   win_service:
-    name: "{{ item.Name }}"
+    name: "{{ item }}"
     state: stopped
   register: Stopped_services
   when: stop_failed is defined
-  loop: "{{ services_info }}"
+  loop: "{{ running_services.stdout }}"
   delegate_to: {{groups['app_server'][0]}}"
 
 ###################Stopping SQL Service#######################
@@ -101,10 +97,10 @@
 ###########################Starting App Services##########################
 - name: Starting the services in the list
   win_service:
-    name: "{{ item.Name }}"
+    name: "{{ item }}"
     state: started
   register: started_services
-  loop: "{{ services_info }}"
+  loop: "{{ running_services.stdout }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - name: Waiting for the all the services to be started
@@ -114,9 +110,9 @@
 
 - name: Check whether the services are running
   win_service:
-    name: "{{ item.Name }}"
+    name: "{{ item }}"
   register: service_info
-  loop: "{{ services_info }}"
+  loop: "{{ running_services.stdout }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - debug:
@@ -126,9 +122,9 @@
   
 - name: Trying to start the services again
   win_service:
-    name: "{{ item.Name }}"
+    name: "{{ item }}"
     state: started
   register: started_services
   when: start_failed is defined
-  loop: "{{ services_info }}"
+  loop: "{{ running_services.stdout }}"
   delegate_to: {{groups['app_server'][0]}}"
