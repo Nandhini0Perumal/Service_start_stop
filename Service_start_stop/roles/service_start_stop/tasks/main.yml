@@ -14,14 +14,14 @@
 - name: Debugging the output
   debug:
     msg: "services name {{ item }}"
-  loop: "{{ running_services.stdout }}"
+  loop: "{{ running_services.stdout | trim }}"
 
 - name: Stopping the services in the list
   win_service:
     name: "{{item}}"
     state: stopped
   register: Stopped_services
-  loop: "{{ running_services.stdout }}"
+  loop: "{{ running_services.stdout | trim }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - name: Waiting for the all the services to be stopped
@@ -33,7 +33,7 @@
   win_service:
     name: "{{ item }}"
   register: service_info
-  loop: "{{ running_services.stdout }}"
+  loop: "{{ running_services.stdout | trim }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - debug:
@@ -47,7 +47,7 @@
     state: stopped
   register: Stopped_services
   when: stop_failed is defined
-  loop: "{{ running_services.stdout }}"
+  loop: "{{ running_services.stdout | trim}}"
   delegate_to: {{groups['app_server'][0]}}"
 
 ###################Stopping SQL Service#######################
@@ -100,7 +100,7 @@
     name: "{{ item }}"
     state: started
   register: started_services
-  loop: "{{ running_services.stdout }}"
+  loop: "{{ running_services.stdout | trim }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - name: Waiting for the all the services to be started
@@ -112,7 +112,7 @@
   win_service:
     name: "{{ item }}"
   register: service_info
-  loop: "{{ running_services.stdout }}"
+  loop: "{{running_services.stdout | trim }}"
   delegate_to: {{groups['app_server'][0]}}"
   
 - debug:
@@ -126,5 +126,5 @@
     state: started
   register: started_services
   when: start_failed is defined
-  loop: "{{ running_services.stdout }}"
+  loop: "{{ running_services.stdout | trim }}"
   delegate_to: {{groups['app_server'][0]}}"
