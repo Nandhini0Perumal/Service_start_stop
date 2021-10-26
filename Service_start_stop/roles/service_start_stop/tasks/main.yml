@@ -14,7 +14,11 @@
 - name: setting the running_services variable
   set_fact:
     running_services: "{{ running_services.stdout_lines.split(',') }}"
-  
+    
+- name: test debug
+  debug:
+    msg: "service name is {{ item }}"
+  loop: "{{running_services | trim }}"
   
 - name: Stopping the services in the list
   win_service:
