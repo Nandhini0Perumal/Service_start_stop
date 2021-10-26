@@ -11,8 +11,7 @@
   
 - debug: var=running_services
   
-- name: setting the running_services variable
-  set_fact:
+- set_fact:
     running_services: "{{ running_services.stdout_lines.split(',') }}"
     
 - name: test debug
