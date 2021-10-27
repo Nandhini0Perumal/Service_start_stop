@@ -1,0 +1,3 @@
+{% for service in services_list %}
+    Start-Service {{service}} -PassThru
+{% endfor %}
