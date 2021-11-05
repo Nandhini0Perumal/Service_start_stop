@@ -12,15 +12,11 @@
 - name: setting a variable to create powershell script
   set_fact:
     services_list: "{{running_services.stdout_lines | list }}"
-
-- name: copy jinja template to stop the services
-  win_template:
-    src: templates/stop_service.j2
-    dest: C:\temp\stop_service.ps1
-  
+    
 - name: Stopping the services in the list
-  win_shell: C:\temp\stop_service.ps1
+  win_shell: sc.exe stop {{item}}
   register: Stopped_services
+  loop: "{{running_services.stdout_lines.split(',') | trim }}"
   delegate_to: "{{app_server}}" 
     
 - name: Waiting for the all the services to be stopped
@@ -74,14 +70,11 @@
   delegate_to: "{{db_server}}"
 
 ###########################Starting App Services##########################
-- name: copy jinja template to start the services
-  win_template:
-    src: templates/start_service.j2
-    dest: C:\temp\start_service.ps1
   
 - name: Starting the services in the list
-  win_shell: C:\temp\start_service.ps1
+  win_shell: sc.exe start {{item}}
   register: started_services
+  loop: "{{running_services.stdout_lines.split(',') | trim }}"
   delegate_to: "{{app_server}}"
   
 - name: Waiting for the all the services to be started
