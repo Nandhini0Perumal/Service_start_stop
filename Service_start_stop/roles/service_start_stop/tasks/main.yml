@@ -14,10 +14,11 @@
     services_list: "{{running_services.stdout_lines | list }}"
     
 - name: Stopping the services in the list
-  win_shell: sc.exe stop "{{item}}"
+  win_shell: 'sc.exe stop "{{item}}"'
   register: Stopped_services
   loop: "{{running_services.stdout_lines.split(',') | trim }}"
   delegate_to: "{{app_server}}" 
+  ignore_errors: true
     
 - name: Waiting for the all the services to be stopped
   wait_for:
@@ -72,10 +73,11 @@
 ###########################Starting App Services##########################
   
 - name: Starting the services in the list
-  win_shell: sc.exe start "{{item}}"
+  win_shell: 'sc.exe start "{{item}}"'
   register: started_services
   loop: "{{running_services.stdout_lines.split(',') | trim }}"
   delegate_to: "{{app_server}}"
+  ignore_errors: true
   
 - name: Waiting for the all the services to be started
   wait_for:
