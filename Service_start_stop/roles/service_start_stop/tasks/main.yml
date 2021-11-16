@@ -16,7 +16,7 @@
 - name: Stopping the services in the list
   win_shell: 'sc.exe stop "{{item}}"'
   register: Stopped_services
-  loop: "{{running_services.stdout_lines.split(',') | trim }}"
+  loop: "{{running_services.stdout_lines}}"
   delegate_to: "{{app_server}}" 
   ignore_errors: true
     
@@ -31,6 +31,7 @@
   win_service:
     name: "{{item}}"
     state: stopped
+    force_dependent_services: True
   register: sql_service_stopped
   with_items:
   - "sql_service"
@@ -60,6 +61,7 @@
   win_service:
     name: "{{item}}"
     state: started
+    force_dependent_services: True
   register: sql_service_started
   with_items:
   - "sql_service"
@@ -75,7 +77,7 @@
 - name: Starting the services in the list
   win_shell: 'sc.exe start "{{item}}"'
   register: started_services
-  loop: "{{running_services.stdout_lines.split(',') | trim }}"
+  loop: "{{running_services.stdout_lines}}"
   delegate_to: "{{app_server}}"
   ignore_errors: true
   
