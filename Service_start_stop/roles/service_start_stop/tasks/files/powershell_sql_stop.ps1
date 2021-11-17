@@ -1,0 +1,1 @@
+Stop-Services 'mysqlserver' - Force

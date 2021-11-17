@@ -1,0 +1,1 @@
+Start-Services 'mysqlserver' - Force
