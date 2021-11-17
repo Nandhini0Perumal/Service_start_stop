@@ -27,16 +27,19 @@
 
 
 ###################Stopping SQL Service#######################
+- name: copy the powershell files to sql server
+  win_copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"    
+  loop:
+    - {src: 'script/powershell_sql_stop.ps1', dest: 'C:\temp\powershell_sql_stop.ps1'}
+    - {src: 'script/powershell_sql_start.ps1', dest: 'C:\temp\powershell_sql_start.ps1'}
+    
 - name: stopping sql service
-  win_service:
-    name: "{{item}}"
-    state: stopped
-    force_dependent_services: True
+  win_shell: C:\temp\powershell_sql_stop.ps1
   register: sql_service_stopped
-  with_items:
-  - "sql_service"
-  delegate_to: "{{db_server}}"
-  
+  delegate_to:  "{{db_server}}"
+
 - name: Waiting for sql service to be stopped
   wait_for:
     timeout: 20
@@ -58,13 +61,8 @@
   
 ######################Starting SQL service##################
 - name: starting sql service
-  win_service:
-    name: "{{item}}"
-    state: started
-    force_dependent_services: True
+  win_shell: C:\temp\powershell_sql_start.ps1
   register: sql_service_started
-  with_items:
-  - "sql_service"
   delegate_to: "{{db_server}}"
 
 - name: Waiting for sql service to be started
