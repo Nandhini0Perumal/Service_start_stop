@@ -1,1 +1,1 @@
-Start-Services 'mysqlserver' - Force
+Start-Service -Name 'MSSQLSERVER' -Force
