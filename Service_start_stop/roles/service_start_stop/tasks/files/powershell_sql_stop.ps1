@@ -1,1 +1,1 @@
-Stop-Services 'mysqlserver' - Force
+Stop-Service -Name 'MSSQLSERVER' -Force
