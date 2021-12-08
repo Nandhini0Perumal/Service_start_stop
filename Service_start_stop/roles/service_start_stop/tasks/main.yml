@@ -69,6 +69,15 @@
   wait_for:
     timeout: 20
   delegate_to: "{{db_server}}"
+  
+- name: check status of service
+  win_service:
+    name: MYSQLSERVER
+  register: result
+  retries: 3
+  
+- debug: var="{{result}}"
+  
 
 ###########################Starting App Services##########################
   
